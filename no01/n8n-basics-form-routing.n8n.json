@@ -1,0 +1,258 @@
+{
+  "name": "n8n-basics-20261003-form-routing",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "相談受付",
+        "formDescription": "質問や不具合を受け付けます。",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "件名",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "種別",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "質問"
+                  },
+                  {
+                    "option": "不具合"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "本文",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5d7c7cb6-8376-4bb7-b34b-ca060b46a42e",
+      "name": "相談を受け取る",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -624,
+        128
+      ],
+      "webhookId": "55620911-69df-433e-8c60-eac5a916ce29"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "if-category-20261003",
+              "leftValue": "={{ $json[\"種別\"] }}",
+              "rightValue": "不具合",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3ca946c0-604a-43f0-a963-e65264d09d1d",
+      "name": "不具合か？",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "lane-bug-20261003",
+              "name": "対応レーン",
+              "value": "不具合確認",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "41f245c1-f056-4817-82b0-79f3e93abd50",
+      "name": "不具合確認レーン",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "lane-normal-20261003",
+              "name": "対応レーン",
+              "value": "通常受付",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "7675405d-9a9b-4bad-890b-90fdeec7e9fd",
+      "name": "通常受付レーン",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "n8n_basics_20261003_intake"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "subject": "={{ $json[\"件名\"] }}",
+            "category": "={{ $json[\"種別\"] }}",
+            "body": "={{ $json[\"本文\"] }}",
+            "lane": "={{ $json[\"対応レーン\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lane",
+              "displayName": "lane",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "optimizeBulk": false
+        },
+        "resource": "row",
+        "operation": "insert"
+      },
+      "id": "7af8ce82-c4a6-44e5-ba41-45d370adda04",
+      "name": "受付表に追加",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        128
+      ]
+    }
+  ],
+  "connections": {
+    "相談を受け取る": {
+      "main": [
+        [
+          {
+            "node": "不具合か？",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "不具合か？": {
+      "main": [
+        [
+          {
+            "node": "不具合確認レーン",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "通常受付レーン",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "不具合確認レーン": {
+      "main": [
+        [
+          {
+            "node": "受付表に追加",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "通常受付レーン": {
+      "main": [
+        [
+          {
+            "node": "受付表に追加",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null
+}

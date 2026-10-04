@@ -1,0 +1,15 @@
+# Cloudflare / wrangler local dev state (never generated in this sample as committed,
+# but excluded in case a future `wrangler dev` run drops it here)
+.wrangler/
+.dev.vars
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Misc dev logs
+*.log
+dev.log
+
+# OS cruft
+.DS_Store
